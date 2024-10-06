@@ -27,11 +27,18 @@ export interface Hero {
   image: string;
 }
 
+export interface Attacks {
+  mental: number;
+  strong: number;
+  fast: number;
+}
+
 export interface HeroFull extends Hero {
   hp: number;
   fb: number;
   actualStats: Powerstats;
   isbuffed: boolean;
+  attacks: Attacks;
 }
 
 export interface Team {

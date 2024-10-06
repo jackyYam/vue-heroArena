@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { NotepadText } from 'lucide-vue-next';
 import AlignmentBage from './AlignmentBage.vue';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,11 @@ const props = defineProps<{
 
 const heroImage = ref(props.hero.image);
 
+watch(() => props.hero.image, (newImage) => {
+    heroImage.value = newImage;
+});
+
+
 const setFallbackImage = (event: Event) => {
     (event.target as HTMLImageElement).src = '/fallback.png'; // Path to your fallback image in the public folder
 };
@@ -34,13 +39,14 @@ const setFallbackImage = (event: Event) => {
 <template>
     <Card :class="cn({
         'w-72': size === 'medium',
-        'w-36': size === 'small'
+        'w-52': size === 'small',
+        'w-96': size === 'large',
     })">
         <CardHeader class="p-4 flex items-center" :class="cn('p-4 flex items-center', {
             'p-1 flex-row gap-1 justify-between': size === 'small',
         })">
-            <CardTitle class="text-xl" :class="cn({
-                'text-lg': size === 'small',
+            <CardTitle :class="cn({
+                'text-base w-[70%]': size === 'small',
                 'text-xl': size !== 'small',
             })">{{ props.hero.name }} <span v-if="size !== 'small'"
                     class="rounded-md bg-red-700 text-white p-1 text-sm text-center">❤️

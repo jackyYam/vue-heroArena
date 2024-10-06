@@ -27,6 +27,13 @@ class Biography:
 
 
 @dataclass
+class Attacks:
+    mental: float
+    strong: float
+    fast: float
+
+
+@dataclass
 class Hero:
     id: int
     name: str
@@ -42,6 +49,7 @@ class HeroFull(Hero):
     hp: int
     fb: int
     actualStats: Powerstats
+    attacks: Attacks
 
 
 @dataclass
@@ -50,14 +58,36 @@ class Team:
     heroes: List[HeroFull]
 
 
-def calculate_hp(hero: Hero) -> float:
-    powerstats = hero.powerstats
+def calculate_hp(powerstats: Powerstats) -> float:
     durability = powerstats.durability
     strength = powerstats.strength
     power = powerstats.power
     AS = powerstats.AS
     return math.floor(
         (strength * 0.8 + durability * 0.7 + power) * (1 + AS / 10) / 2 + 100,
+    )
+
+
+def calculate_attacks(powerstats: Powerstats, fb: int) -> Attacks:
+    mental = (
+        powerstats.intelligence * 0.7
+        + powerstats.combat * 0.1
+        + powerstats.speed * 0.2
+    ) * fb
+    strong = (
+        powerstats.strength * 0.6
+        + powerstats.power * 0.2
+        + powerstats.combat * 0.2
+    ) * fb
+    fast = (
+        powerstats.speed * 0.55
+        + powerstats.durability * 0.25
+        + powerstats.strength * 0.2
+    ) * fb
+    return Attacks(
+        mental=math.ceil(mental),
+        strong=math.ceil(strong),
+        fast=math.ceil(fast),
     )
 
 
@@ -72,7 +102,6 @@ def parse_hero(hero: Hero, team_alignment: str) -> HeroFull:
     powerstats = hero.powerstats
     AS = powerstats.AS
     transformed_stats = Powerstats(**vars(powerstats))
-    hp = calculate_hp(hero)
     fb = calculate_fb(hero, team_alignment)
     isbuffed = is_alignment_match(team_alignment, hero.alignment)
     for key in vars(transformed_stats):
@@ -80,16 +109,18 @@ def parse_hero(hero: Hero, team_alignment: str) -> HeroFull:
             setattr(
                 transformed_stats,
                 key,
-                math.floor(
-                    ((2 * getattr(transformed_stats, key) + AS) * fb) / 2
-                ),
+                math.floor(((2 * getattr(powerstats, key) + AS) * fb) / 1.1),
             )
+    hp = calculate_hp(transformed_stats)
+    attacks = calculate_attacks(transformed_stats, fb)
+
     return HeroFull(
         **vars(hero),
+        isbuffed=isbuffed,
         hp=hp,
         fb=fb,
         actualStats=transformed_stats,
-        isbuffed=isbuffed,
+        attacks=attacks,
     )
 
 

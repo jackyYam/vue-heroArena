@@ -11,7 +11,7 @@ console.log(props);
 </script>
 
 <template>
-    <Badge :class="cn({
+    <Badge :class="cn('hover:none', {
         'bg-slate-400 text-black': alignment === 'bad',
         'bg-blue-400 text-black': alignment === 'good',
         'bg-green-400 text-black': !isAlignment && buffed,

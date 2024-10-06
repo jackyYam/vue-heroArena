@@ -14,9 +14,7 @@ export const useHeroStore = create<heroStore>((set) => ({
 
 interface gameSettingsStore {
   team1: Team;
-  team1Dead: Team;
   team2: Team;
-  team2Dead: Team;
   setTeam1: (team: Team) => void;
   setTeam2: (team: Team) => void;
 }
@@ -26,4 +24,14 @@ export const useGameSettingsStore = create<gameSettingsStore>((set) => ({
   team2: { alignment: '', heroes: [] },
   setTeam1: (team) => set(() => ({ team1: team })),
   setTeam2: (team) => set(() => ({ team2: team })),
+}));
+
+interface emailStore {
+  email: string;
+  setEmail: (email: string) => void;
+}
+
+export const useEmailStore = create<emailStore>((set) => ({
+  email: '',
+  setEmail: (email) => set(() => ({ email })),
 }));
