@@ -11,6 +11,7 @@ import AlignmentBage from '@/components/AlignmentBage.vue';
 const team1 = useGameSettingsStore((state) => state.team1);
 const team2 = useGameSettingsStore((state) => state.team2);
 const router = useRouter();
+let autoplayInterval: string | number | NodeJS.Timeout | null | undefined = null;
 
 const currentHeroT1 = ref(team1.heroes.value.shift());
 const currentHeroT2 = ref(team2.heroes.value.shift());
@@ -95,14 +96,24 @@ const takeTurn = () => {
     // Update the turn number
     turnNumber.value += 1;
 };
+const startAutoplay = () => {
+    if (!autoplayInterval) {
+        autoplayInterval = setInterval(() => {
+            takeTurn();
+        }, 1000); // Adjust the delay as needed
+    }
+};
 
 </script>
 
 <template>
     <div class="flex flex-col w-full items-center">
-        <Button @click="router.go(0)" class="absolute bottom-28 right-3 w-28" v-if="winner" variant="secondary">New
+        <Button @click="router.go(0)" class="absolute bottom-40 right-3 w-32" v-if="winner" variant="secondary">New
             Game</Button>
-        <Button @click="takeTurn" class="absolute bottom-10 right-3" :disabled="winner">
+        <Button @click="startAutoplay" class="absolute bottom-28 right-3 w-32 bg-green-500 hover:bg-green-700"
+            :disabled="winner || autoplayInterval">🤖 Autoplay</Button>
+
+        <Button @click="takeTurn" class="absolute bottom-16 right-3 w-32" :disabled="winner || autoplayInterval">
             {{ winner ? 'Game Ended' : '▶️ Take Turn' }}
         </Button>
         <div class="border border-blue-500 w-[1500px] h-[430px] rounded-xl p-3">
