@@ -1,7 +1,10 @@
+from pydantic import BaseModel
 import requests
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from hero import Hero, HeroFull, parse_hero, Team, get_team_alignment
+from typing import List
 import os
 import random
 import asyncio
@@ -48,20 +51,25 @@ async def websocket_endpoint(websocket: WebSocket):
                     if response.status_code == 200:
                         hero_data = response.json()
                         powerstats = hero_data.get("powerstats", {})
+                        hero_data["biography"] = {
+                            k.replace("-", "_"): v
+                            for k, v in hero_data["biography"].items()
+                        }
                         for stat, value in powerstats.items():
                             if value == "null":
                                 powerstats[stat] = random.randint(0, 50)
                             else:
                                 powerstats[stat] = int(value)
                         powerstats["AS"] = random.randint(0, 10)
+                        alignment = hero_data["biography"].get("alignment")
+                        if alignment == "-":
+                            alignment = "neutral"
                         heroes.append(
                             {
                                 "id": hero_id,
                                 "name": hero_data["name"],
                                 "powerstats": powerstats,
-                                "alignment": hero_data["biography"][
-                                    "alignment"
-                                ],
+                                "alignment": alignment,
                                 "biography": hero_data["biography"],
                                 "image": hero_data["image"]["url"],
                             }
@@ -80,6 +88,29 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"WebSocket connection closed: {e}")
 
 
-@app.get("/teams")
-async def get_superheros():
-    return {"message": "Use the WebSocket endpoint to get progress updates."}
+class HeroesRequest(BaseModel):
+    heroes: List[Hero]
+
+
+@app.post("/teams")
+async def create_teams(request: HeroesRequest):
+    heroes = request.heroes
+    random.shuffle(heroes)
+    mid_index = len(heroes) // 2
+    team1_heroes = heroes[:mid_index]
+    team2_heroes = heroes[mid_index:]
+
+    team1_alignment = get_team_alignment(
+        [parse_hero(hero, hero.alignment) for hero in team1_heroes]
+    )
+    team2_alignment = get_team_alignment(
+        [parse_hero(hero, hero.alignment) for hero in team2_heroes]
+    )
+
+    parsed_team1 = [parse_hero(hero, team1_alignment) for hero in team1_heroes]
+    parsed_team2 = [parse_hero(hero, team2_alignment) for hero in team2_heroes]
+
+    return {
+        "team1": Team(alignment=team1_alignment, heroes=parsed_team1),
+        "team2": Team(alignment=team2_alignment, heroes=parsed_team2),
+    }

@@ -31,6 +31,7 @@ export interface HeroFull extends Hero {
   hp: number;
   fb: number;
   actualStats: Powerstats;
+  isbuffed: boolean;
 }
 
 export interface Team {

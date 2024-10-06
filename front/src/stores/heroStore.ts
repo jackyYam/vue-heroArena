@@ -5,23 +5,25 @@ import { parseHero, getTeamAlignment } from '@/lib/utils';
 interface heroStore {
   heroes: Hero[];
   setHeroes: (heroes: Hero[]) => void;
-  team1: Team[];
-  team2: Team[];
-  splitTeams: () => void;
 }
 
 export const useHeroStore = create<heroStore>((set) => ({
   heroes: [],
-  team1: [],
-  team2: [],
-  setHeroes: (heroes) => set({ heroes }),
-  splitTeams: () => {
-    const shuffledHeroes = [...useHeroStore.getState().heroes].sort(
-      () => Math.random() - 0.5
-    );
-    const half = Math.ceil(shuffledHeroes.length / 2);
-    const team1 = shuffledHeroes.splice(0, half);
-    const team2 = shuffledHeroes;
-    set({ team1, team2 });
-  },
+  setHeroes: (heroes) => set(() => ({ heroes })),
+}));
+
+interface gameSettingsStore {
+  team1: Team;
+  team1Dead: Team;
+  team2: Team;
+  team2Dead: Team;
+  setTeam1: (team: Team) => void;
+  setTeam2: (team: Team) => void;
+}
+
+export const useGameSettingsStore = create<gameSettingsStore>((set) => ({
+  team1: { alignment: '', heroes: [] },
+  team2: { alignment: '', heroes: [] },
+  setTeam1: (team) => set(() => ({ team1: team })),
+  setTeam2: (team) => set(() => ({ team2: team })),
 }));
