@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import Badge from './ui/badge/Badge.vue';
 import { cn } from '@/lib/utils';
-const props = defineProps<{
+defineProps<{
     isAlignment: boolean;
     alignment?: string;
     buffed?: boolean;
     buff?: number;
 }>();
-console.log(props);
 </script>
 
 <template>
